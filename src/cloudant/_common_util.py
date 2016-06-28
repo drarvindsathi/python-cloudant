@@ -234,6 +234,24 @@ def codify(code_or_str):
         return _Code(code_or_str)
     return code_or_str
 
+def _get_docs(url, **kwargs):
+    """
+    Provides a helper to get a response with documents for GET/POST requests.
+    """
+    r_session = kwargs.pop('r_session', None)
+    encoder = kwargs.pop('encoder', None)
+
+    params = python_to_couch(kwargs)
+    keys_list = params.pop('keys', None)
+    resp = None
+    if keys_list:
+        keys = json.dumps({'keys': keys_list}, cls=encoder)
+        resp = r_session.post(url, params=params, data=keys)
+    else:
+        resp = r_session.get(url, params=params)
+    resp.raise_for_status()
+    return resp
+
 # Classes
 
 class _Code(str):
