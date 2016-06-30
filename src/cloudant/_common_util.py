@@ -234,7 +234,7 @@ def codify(code_or_str):
         return _Code(code_or_str)
     return code_or_str
 
-def _get_docs(url, **kwargs):
+def get_docs(url, **kwargs):
     """
     Provides a helper to get a response with documents for GET/POST requests.
     """

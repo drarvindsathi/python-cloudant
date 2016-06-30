@@ -19,7 +19,7 @@ import contextlib
 import posixpath
 
 from ._2to3 import STRTYPE
-from ._common_util import codify, _get_docs
+from ._common_util import codify, get_docs
 from .result import Result
 from .error import CloudantArgumentError, CloudantException
 
@@ -224,10 +224,10 @@ class View(dict):
 
         :returns: View result data in JSON format
         """
-        resp = _get_docs(self.url,
-                         r_session=self._r_session,
-                         encoder=self.design_doc.encoder,
-                         **kwargs)
+        resp = get_docs(self.url,
+                        r_session=self._r_session,
+                        encoder=self.design_doc.encoder,
+                        **kwargs)
         return resp.json()
 
     @contextlib.contextmanager
