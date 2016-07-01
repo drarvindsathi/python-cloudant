@@ -224,9 +224,9 @@ class View(dict):
 
         :returns: View result data in JSON format
         """
-        resp = get_docs(self.url,
-                        r_session=self._r_session,
-                        encoder=self.design_doc.encoder,
+        resp = get_docs(self._r_session,
+                        self.url,
+                        self.design_doc.encoder,
                         **kwargs)
         return resp.json()
 

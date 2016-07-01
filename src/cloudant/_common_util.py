@@ -234,15 +234,19 @@ def codify(code_or_str):
         return _Code(code_or_str)
     return code_or_str
 
-def get_docs(url, **kwargs):
+def get_docs(r_session, url, encoder=None, **kwargs):
     """
-    Provides a helper to get a response with documents for GET/POST requests.
-    """
-    r_session = kwargs.pop('r_session', None)
-    encoder = kwargs.pop('encoder', None)
+    Provides a helper for functions that require GET or POST requests
+    with a JSON, text, or raw response containing documents.
 
+    :param r_session: Authentication session from the client
+    :param str url: URL containing the endpoint
+    :param JSONEncoder encoder: Custom encoder from the client
+
+    :returns: Raw response content from the specified endpoint
+    """
+    keys_list = kwargs.pop('keys', None)
     params = python_to_couch(kwargs)
-    keys_list = params.pop('keys', None)
     resp = None
     if keys_list:
         keys = json.dumps({'keys': keys_list}, cls=encoder)

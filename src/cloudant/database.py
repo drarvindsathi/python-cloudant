@@ -362,9 +362,9 @@ class CouchDatabase(dict):
         :returns: Raw JSON response content from ``_all_docs`` endpoint
 
         """
-        resp = get_docs(posixpath.join(self.database_url, '_all_docs'),
-                        r_session=self.r_session,
-                        encoder=self.client.encoder,
+        resp = get_docs(self.r_session,
+                        '/'.join([self.database_url, '_all_docs']),
+                        self.client.encoder,
                         **kwargs)
         return resp.json()
 
