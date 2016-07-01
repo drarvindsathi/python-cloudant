@@ -234,6 +234,29 @@ def codify(code_or_str):
         return _Code(code_or_str)
     return code_or_str
 
+def get_docs(r_session, url, encoder=None, headers=None, **kwargs):
+    """
+    Provides a helper for functions that require GET or POST requests
+    with a JSON, text, or raw response containing documents.
+
+    :param r_session: Authentication session from the client
+    :param str url: URL containing the endpoint
+    :param JSONEncoder encoder: Custom encoder from the client
+    :param dict headers: Optional HTTP header for the request
+
+    :returns: Raw response content from the specified endpoint
+    """
+    keys_list = kwargs.pop('keys', None)
+    params = python_to_couch(kwargs)
+    resp = None
+    if keys_list:
+        keys = json.dumps({'keys': keys_list}, cls=encoder)
+        resp = r_session.post(url, headers=headers, params=params, data=keys)
+    else:
+        resp = r_session.get(url, headers=headers, params=params)
+    resp.raise_for_status()
+    return resp
+
 # Classes
 
 class _Code(str):

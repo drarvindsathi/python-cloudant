@@ -27,8 +27,7 @@ from ._common_util import (
     SEARCH_INDEX_ARGS,
     SPECIAL_INDEX_TYPE,
     TEXT_INDEX_TYPE,
-    python_to_couch
-)
+    get_docs)
 from .document import Document
 from .design_document import DesignDocument
 from .view import View
@@ -363,16 +362,10 @@ class CouchDatabase(dict):
         :returns: Raw JSON response content from ``_all_docs`` endpoint
 
         """
-        all_docs_url = posixpath.join(self.database_url, '_all_docs')
-        params = python_to_couch(kwargs)
-        keys_list = params.pop('keys', None)
-        resp = None
-        if keys_list:
-            keys = json.dumps({'keys': keys_list})
-            resp = self.r_session.post(all_docs_url, params=params, data=keys)
-        else:
-            resp = self.r_session.get(all_docs_url, params=params)
-        resp.raise_for_status()
+        resp = get_docs(self.r_session,
+                        '/'.join([self.database_url, '_all_docs']),
+                        self.client.encoder,
+                        **kwargs)
         return resp.json()
 
     @contextlib.contextmanager
@@ -768,6 +761,48 @@ class CouchDatabase(dict):
         resp.raise_for_status()
 
         return resp.json()
+
+    def get_list_result(self, ddoc_id, list_name, view_name, **kwargs):
+        """
+        Retrieves a customized MapReduce view result from the specified
+        database based on the list function provided.  List functions are
+        used when you want to access Cloudant directly from a browser, and
+        need data to be returned in a different format, such as HTML.
+
+        Note: All query parameters for View requests are supported.
+        See :class:`~cloudant.database.get_view_result` for
+        all supported query parameters.
+
+        For example:
+
+        .. code-block:: python
+
+            # Assuming that 'view001' exists as part of the
+            # 'ddoc001' design document in the remote database...
+            # Retrieve documents where the list function is 'list1'
+            resp = db.get_list_result('ddoc001', 'list1', 'view001', limit=10)
+            for row in resp['rows']:
+                # Process data (in text format).
+
+        For more detail on list functions, refer to the
+        `Cloudant documentation <https://docs.cloudant.com/
+        design_documents.html#list-functions>`_.
+
+        :param str ddoc_id: Design document id used to get the search result.
+        :param str list_name: Name used in part to identify the
+            list function.
+        :param str view_name: Name used in part to identify the view.
+
+        :return: Customized view result data in text format
+        """
+        ddoc = DesignDocument(self, ddoc_id)
+        headers = {'Content-Type': 'application/json'}
+        resp = get_docs(self.r_session,
+                        '/'.join([ddoc.document_url, '_list', list_name, view_name]),
+                        self.client.encoder,
+                        headers,
+                        **kwargs)
+        return resp.text
 
 class CloudantDatabase(CouchDatabase):
     """
